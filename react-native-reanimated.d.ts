@@ -366,7 +366,7 @@ declare module 'react-native-reanimated' {
       x: number,
       input: Array<number>,
       output: Array<number>,
-      type?: Extrapolate
+      type?: Extrapolate | { extrapolateLeft?: Extrapolate, extrapolateRight?: Extrapolate }
     ): number;
 
     // animations
