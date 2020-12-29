@@ -2,7 +2,7 @@
 // TypeScript Version: 2.8
 
 declare module 'react-native-reanimated' {
-  import { ComponentClass, ReactNode, Component, RefObject } from 'react';
+  import { ComponentClass, ReactNode, Component, RefObject, ComponentType } from 'react';
   import {
     ViewProps,
     TextProps,
@@ -73,7 +73,8 @@ declare module 'react-native-reanimated' {
     export type SharedValue<T extends SharedValueType> = {
       value: T;
     };
-
+    export type DerivedValue<T extends SharedValueType> = Readonly<SharedValue<T>>;
+    
     export type Mapping = { [key: string]: Mapping } | Adaptable<any>;
     export type Adaptable<T> =
       | T
@@ -242,7 +243,7 @@ declare module 'react-native-reanimated' {
       getNode(): ReactNativeScrollView;
     }
     export class Code extends Component<CodeProps> {}
-    export function createAnimatedComponent(component: any): any;
+    export function createAnimatedComponent<S extends object, P extends { style?: StyleProp<S>; }>(component: ComponentType<P>): ComponentType<AnimateProps<S, P>>;
 
     // classes
     export {
@@ -425,7 +426,8 @@ declare module 'react-native-reanimated' {
     export function withRepeat(
       animation: number,
       numberOfReps?: number,
-      reverse?: boolean
+      reverse?: boolean,
+      callback?: (isFinished: boolean) => void
     ): number;
     export function withSequence(...animations: [number, ...number[]]): number;
 
@@ -474,7 +476,7 @@ declare module 'react-native-reanimated' {
     export function useDerivedValue<T extends SharedValueType>(
       processor: () => T,
       deps?: DependencyList
-    ): SharedValue<T>;
+    ): DerivedValue<T>;
 
     export function useAnimatedReaction<D>(
       dependencies: () => D,
