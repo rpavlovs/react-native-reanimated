@@ -20,6 +20,8 @@ declare module 'react-native-reanimated' {
     ScrollView as ReactNativeScrollView,
     NativeScrollEvent,
     NativeSyntheticEvent,
+    ColorValue,
+    OpaqueColorValue
   } from 'react-native';
   import {
     GestureHandlerGestureEvent,
@@ -68,13 +70,8 @@ declare module 'react-native-reanimated' {
       interpolate(config: InterpolationConfig): AnimatedNode<number>;
     }
 
-    type RawSharedValue = number | string | boolean | object;
-    type SharedValueType = RawSharedValue | RawSharedValue[];
-    export type SharedValue<T extends SharedValueType> = {
-      value: T;
-    };
-    export type DerivedValue<T extends SharedValueType> = Readonly<SharedValue<T>>;
-    
+    export type SharedValue<T> = { value: T };
+    export type DerivedValue<T> = Readonly<SharedValue<T>>;
     export type Mapping = { [key: string]: Mapping } | Adaptable<any>;
     export type Adaptable<T> =
       | T
@@ -406,12 +403,12 @@ declare module 'react-native-reanimated' {
       easing?: EasingFunction;
     }
     export function withTiming(
-      toValue: number,
+      toValue: number | Exclude<ColorValue, OpaqueColorValue>,  // string as a color value like `"rgba(20,20,20,0)"`
       userConfig?: WithTimingConfig,
       callback?: (isFinished: boolean) => void
     ): number;
     export function withSpring(
-      toValue: number,
+      toValue: number | Exclude<ColorValue, OpaqueColorValue>, // string as a color value like `"rgba(20,20,20,0)"`
       userConfig?: WithSpringConfig,
       callback?: (isFinished: boolean) => void
     ): number;
@@ -419,8 +416,8 @@ declare module 'react-native-reanimated' {
       userConfig: WithDecayConfig,
       callback?: (isFinished: boolean) => void
     ): number;
-    export function cancelAnimation<T extends SharedValue<SharedValueType>>(
-      sharedValue: T
+    export function cancelAnimation<T>(
+      sharedValue: SharedValue<T>
     ): void;
     export function withDelay(delayMS: number, delayedAnimation: number): number;
     export function withRepeat(
@@ -456,12 +453,12 @@ declare module 'react-native-reanimated' {
 
     export function interpolateColor(
       value: number,
-      inputRange: number[],
-      outputRange: string[],
+      inputRange: readonly number[],
+      outputRange: readonly (string | number)[],
       colorSpace?: 'RGB' | 'HSV'
     ): string | number;
 
-    export function makeMutable<T extends SharedValueType>(
+    export function makeMutable<T>(
       initialValue: T
     ): SharedValue<T>;
 
@@ -471,9 +468,9 @@ declare module 'react-native-reanimated' {
     export function useSharedValue<T>(
       initialValue: T,
       shouldRebuild?: boolean
-    ): T extends SharedValueType ? SharedValue<T> : never;
+    ): SharedValue<T>;
 
-    export function useDerivedValue<T extends SharedValueType>(
+    export function useDerivedValue<T>(
       processor: () => T,
       deps?: DependencyList
     ): DerivedValue<T>;
@@ -482,7 +479,7 @@ declare module 'react-native-reanimated' {
       dependencies: () => D,
       effects: (dependencies: D) => void,
       deps?: DependencyList
-    );
+    ): void;
                         
     export type AnimatedStyleProp<T extends object> = AnimateStyle<T> | RegisteredStyle<AnimateStyle<T>>;
     export function useAnimatedStyle<
@@ -513,6 +510,7 @@ declare module 'react-native-reanimated' {
     ): (...args: Parameters<typeof fn>) => R;
 
     export function useAnimatedRef<T extends Component>(): RefObject<T>;
+    export function defineAnimation<T>(starting: any, factory: () => T): number;
     export function measure<T extends Component>(
       ref: RefObject<T>
     ): {
@@ -746,6 +744,7 @@ declare module 'react-native-reanimated' {
   export const useAnimatedGestureHandler: typeof Animated.useAnimatedGestureHandler;
   export const useAnimatedScrollHandler: typeof Animated.useAnimatedScrollHandler;
   export const useAnimatedRef: typeof Animated.useAnimatedRef;
+  export const defineAnimation: typeof Animated.defineAnimation;
   export const measure: typeof Animated.measure;
   export const scrollTo: typeof Animated.scrollTo;
   export const withTiming: typeof Animated.withTiming;

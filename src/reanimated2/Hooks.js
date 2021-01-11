@@ -41,7 +41,6 @@ export function useEvent(handler, eventNames = [], rebuild = false) {
 
   useEffect(() => {
     return () => {
-      initRef.current.unregisterFromEvents();
       initRef.current = null;
     };
   }, []);
@@ -72,10 +71,10 @@ function prepareAnimation(animatedProp, lastAnimation, lastValue) {
             // previously it was a shared value
             value = lastValue.value;
           } else if (lastValue.onFrame !== undefined) {
-            if (lastAnimation?.current) {
+            if (lastAnimation?.current !== undefined) {
               // it was an animation before, copy its state
               value = lastAnimation.current;
-            } else if (lastValue?.current) {
+            } else if (lastValue?.current !== undefined) {
               // it was initialized
               value = lastValue.current;
             }
@@ -394,7 +393,7 @@ function buildWorkletsHash(handlers) {
 
 // builds dependencies array for gesture handlers
 function buildDependencies(dependencies, handlers) {
-  if (dependencies === undefined) {
+  if (!dependencies) {
     dependencies = Object.keys(handlers).map((handlerKey) => {
       const handler = handlers[handlerKey];
       return {
@@ -418,10 +417,15 @@ function areDependenciesEqual(nextDeps, prevDeps) {
   var objectIs = typeof Object.is === 'function' ? Object.is : is;
 
   function areHookInputsEqual(nextDeps, prevDeps) {
-    if (prevDeps === null) return !1;
-    for (var i = 0; i < prevDeps.length && i < nextDeps.length; i++)
-      if (!objectIs(nextDeps[i], prevDeps[i])) return !1;
-    return !0;
+    if (!nextDeps || !prevDeps || prevDeps.length !== nextDeps.length) {
+      return false;
+    }
+    for (let i = 0; i < prevDeps.length; ++i) {
+      if (!objectIs(nextDeps[i], prevDeps[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   return areHookInputsEqual(nextDeps, prevDeps);
